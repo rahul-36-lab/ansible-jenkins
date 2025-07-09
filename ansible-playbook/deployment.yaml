@@ -1,0 +1,28 @@
+- name: build and deploy containr
+  hosts: Docker-server
+  gather_facts: false
+  remote_user: azureuser
+  tasks:
+    - name: copy the files to remote server
+      become: true
+      copy:
+        src: /var/lib/jenkins/workspace/ansible
+        dest: /home/azureuser/project
+
+    - name: building docker image
+      docker_image:
+        name: mico
+        tag: latest
+        source: build
+        build:
+          path: /home/azureuser/project/ansible
+        state: present
+
+    - name: create container
+      docker_container:
+        name: mico-container
+        image: mico:latest
+        ports:
+          - "80:80"
+        state: started
+
